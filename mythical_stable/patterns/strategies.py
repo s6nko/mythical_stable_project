@@ -1,4 +1,5 @@
-import protocols
+from typing import Protocol
+from core import Creature
 '''
 6 — Strategy
 BEHAVIORAL

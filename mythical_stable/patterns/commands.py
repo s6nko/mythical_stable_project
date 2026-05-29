@@ -32,6 +32,9 @@ state after each step.
 Bonus: add redo_last() — this requires a separate redo stack.
 
 '''
+from typing import Protocol
+
+
 class Command(Protocol):
     def execute(self) -> None:
         ...
@@ -48,11 +51,11 @@ class DispatchCommand(Command):
         self._executed = False
 
     def execute(self) -> None:
-        self._service.dispatch(name, destination, days)
+        self._service.dispatch(self._name, self._destination, self._days)
         self._executed = True
 
     def undo(self) -> None:
-        if self._executed():
+        if self._executed:
             self._service.recall(self._name)
 
 
@@ -63,11 +66,11 @@ class RecallCommand(Command):
         self._executed = False
 
     def execute(self) -> None:
-        self._service.recall(name)
+        self._service.recall(self._name)
         self._executed = True
 
     def undo(self) -> None:
-        if self._executed():
+        if self._executed:
             self._service.dispatch(self._name)
 
 

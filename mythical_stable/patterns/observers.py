@@ -30,6 +30,12 @@ Write an OverdueChecker function that checks the record's is_overdue on 'mission
 Subscribe both listeners and confirm they are both called on every dispatch and recall, in subscription order.
 
 """
+from datetime import datetime
+from typing import Callable
+
+from mythical_stable import MissionRecord
+
+
 class EventBus:
     def __init__(self):
         self._listeners: dict[str, list[Callable]] = {}
@@ -44,3 +50,15 @@ class EventBus:
         """Call every subscriber registered for event with payload."""
         for fn in self._listeners.get(event, []):
             fn(payload)
+
+# ── Built-in listener functions ───────────────────────────────────────────────
+
+def audit_logger(payload) -> None:
+    """Print a timestamped audit line for any event payload."""
+    print(f"[AUDIT {datetime.now():%H:%M:%S}] {payload}")
+
+
+def overdue_checker(record: "MissionRecord") -> None:
+    """Warn if the recalled mission record was overdue."""
+    if record.is_overdue:
+        print(f"⚠️  OVERDUE: {record.creature_name} was due back on {record.return_date}")
