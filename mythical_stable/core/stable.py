@@ -1,79 +1,21 @@
+"""
+mythical_stable.core.stable
+============================
+Stable — a composition-based container for Creature objects.
+StableIterator — a custom iterator that yields in-stable creatures by power.
+
+Stable *has* a list internally. It does not extend list. This gives full
+control over the public interface: add() enforces uniqueness, remove() is
+by name, and iteration order is defined by this class, not by list.
+"""
+
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Iterator
 
 if TYPE_CHECKING:
-    from core.creature import Creature
-    from protocols import SortStrategy
-
-from . import utils as u
-
-
-
-class Stable:
-    def __init__(self):
-        self._creatures: list[Creature] = []
-        #self._robots: list[RoboticGuard] = []
-
-    #Returns the number of creatures in the stable
-    def __len__(self):
-        return len(self._creatures)
-
-    #Returns "True" if a creature with that name is present in the stable
-    def __contains__(self, name: str):
-        for creature in self._creatures:
-            if creature.name == name:
-                return True
-        return False
-
-    #Iterates over all creatures
-    def __iter__(self) -> Iterator[Creature]:
-        return iter(self._creatures)
-
-    #stable[creature.name] -> same as find()
-    def __getitem__(self,name: str):
-        return self.find(name)
-
-    #Stable('{len(Stable)} creatures: ["creature1", "creature2","creature3",...]
-    def __repr__(self):
-        names = [creature.name for creature in self._creatures]
-        return f"Stable:({len(self)} creatures: {names})"
-
-    #add(creature: Creature) (add a creature; raise ValueError if a creature with the same name already exists)
-    def add(self, creature: Creature):
-        """Register a creature. Raises ValueError if a creature with the same name already exists."""
-        if creature.name in self:
-            raise ValueError(
-                f"The creature named {creature.name!r} is already in the stable.")
-        else:
-            self._creatures.append(creature)
-            print(f"{u.blue(creature.name)}", u.green("has been added"),"to the stable.")
-
-    #remove(name: str) (remove by name; raise KeyError if not found)
-    def remove(self, name: str):
-        """Remove a creature by name. Raises KeyError if not found."""
-        creature = self.find(name)
-        if creature.name not in self:
-            raise KeyError(f"{creature.name!r} was not found in the stable.")
-        else:
-            self._creatures.remove(creature)
-            print(f"{u.blue(creature.name)}", u.red("has been removed"),"to the stable.")
-
-    #find(name: str) -> Creature (return the creature with that name; raise KeyError if not found)
-    def find(self, name: str):
-        """Return the creature with the given name. Raises KeyError if not found."""
-        for creature in self:
-            if creature.name == name:
-                return creature
-
-        raise KeyError(f"No creature named {name!r} was found.")
-
-    def available_by_power(self) -> StableIterator:
-        """Return a StableIterator over in-stable creatures by power descending."""
-        return StableIterator(self._creatures)
-
-    def sorted(self, strategy: "SortStrategy") -> list["Creature"]:
-        """Return creatures sorted according to the given SortStrategy."""
-        return strategy.sort(list(self._creatures))
-
+    from mythical_stable.core.creatures import Creature
+    from mythical_stable.protocols import SortStrategy
 
 
 class StableIterator:
@@ -107,3 +49,72 @@ class StableIterator:
         creature = self._snapshot[self._index]
         self._index += 1
         return creature
+
+
+class Stable:
+    """A container for Creature objects.
+
+    Composition over inheritance: Stable *has* a list of creatures — it does
+    not *extend* list. This gives full control over the public interface:
+    add() enforces uniqueness, remove() is by name, and the iteration order
+    is defined by the class, not by list's internal ordering.
+
+    Special methods make Stable feel native to Python:
+        len(stable), "Frostbite" in stable, stable["Ember"], for c in stable
+    """
+
+    def __init__(self) -> None:
+        self._creatures: list["Creature"] = []
+
+    # ── mutation ──────────────────────────────────────────────────────────────
+
+    def add(self, creature: "Creature") -> None:
+        """Register a creature. Raises ValueError if a creature with the same name already exists."""
+        if creature.name in self:
+            raise ValueError(f"A creature named '{creature.name}' is already registered.")
+        self._creatures.append(creature)
+
+    def remove(self, name: str) -> None:
+        """Remove a creature by name. Raises KeyError if not found."""
+        creature = self[name]
+        self._creatures.remove(creature)
+
+    def find(self, name: str) -> "Creature":
+        """Return the creature with the given name. Raises KeyError if not found."""
+        for creature in self._creatures:
+            if creature.name == name:
+                return creature
+        raise KeyError(f"No creature named '{name}' in the stable.")
+
+    # ── container special methods ─────────────────────────────────────────────
+
+    def __len__(self) -> int:
+        return len(self._creatures)
+
+    def __contains__(self, name: object) -> bool:
+        """Support: 'Frostbite' in stable."""
+        if not isinstance(name, str):
+            return False
+        return any(c.name == name for c in self._creatures)
+
+    def __iter__(self) -> Iterator["Creature"]:
+        """Support: for creature in stable."""
+        return iter(self._creatures)
+
+    def __getitem__(self, name: str) -> "Creature":
+        """Support: stable['Ember']."""
+        return self.find(name)
+
+    def __repr__(self) -> str:
+        names = [c.name for c in self._creatures]
+        return f"Stable({len(self)} creatures: {names})"
+
+    # ── iteration helpers ─────────────────────────────────────────────────────
+
+    def available_by_power(self) -> StableIterator:
+        """Return a StableIterator over in-stable creatures by power descending."""
+        return StableIterator(self._creatures)
+
+    def sorted(self, strategy: "SortStrategy") -> list["Creature"]:
+        """Return creatures sorted according to the given SortStrategy."""
+        return strategy.sort(list(self._creatures))
