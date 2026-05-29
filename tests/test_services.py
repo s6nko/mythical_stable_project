@@ -1,5 +1,6 @@
 import unittest
-from mythical_stable.core import Stable, Dragon
+from mythical_stable.core.creature import Dragon
+from mythical_stable.core import Stable
 from mythical_stable.services import MissionService, MissionDispatcher
 
 
@@ -13,7 +14,7 @@ class TestServices(unittest.TestCase):
 
     def setUp(self):
         self.stable = Stable()
-        self.dragon = Dragon("Frostbite", "Dragon", "Nordic Realms", 95, element="ice")
+        self.dragon = Dragon("Frostbite", "Nordic Realms", 95, element="ice")
         self.stable.add(self.dragon)
         self.logger = CapturingLogger()
         self.service = MissionService(self.stable, self.logger)
