@@ -1,4 +1,4 @@
-from core.creature import Creature
+from mythical_stable.core.creature import Creature
 
 """
 ==============================================================================

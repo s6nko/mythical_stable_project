@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 import random
-from core import utils as u
+from mythical_stable.core import utils as u
 
 
 """

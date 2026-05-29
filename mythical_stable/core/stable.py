@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from core.creature import Creature
     from protocols import SortStrategy
 
-from core import utils as u
+from . import utils as u
 
 
 

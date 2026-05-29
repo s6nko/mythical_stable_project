@@ -1,6 +1,6 @@
-from core.creature import Creature
-from core import utils as u
-from core.fly_mixin import FlyMixin
+from mythical_stable.core.creature import Creature
+from mythical_stable.core import utils as u
+from mythical_stable.core.fly_mixin import FlyMixin
 
 """
 ==============================================================================
